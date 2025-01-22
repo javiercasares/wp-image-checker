@@ -169,4 +169,3 @@ function verificar_url($url) {
 
     return ($http_code === 200);
 }
-?>
