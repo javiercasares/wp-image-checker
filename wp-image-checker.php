@@ -16,17 +16,20 @@ $table_prefix = $wpdb->prefix;
 // Extensiones de imágenes a buscar
 $image_extensions = ['jpg', 'jpeg', 'png', 'avif', 'webp'];
 
-// Obtener todos los posts publicados
+// Obtener todos los posts y páginas publicados
 $posts = $wpdb->get_results(
     $wpdb->prepare(
-        "SELECT ID, post_content FROM {$table_prefix}posts WHERE post_type = %s AND post_status = %s",
+        "SELECT ID, post_content FROM {$table_prefix}posts 
+         WHERE (post_type = %s OR post_type = %s) 
+         AND post_status = %s",
         'post',
+        'page',
         'publish'
     ),
     OBJECT
 );
 
-echo "Total de posts a procesar: " . count($posts) . "\n";
+echo "Total de posts y páginas a procesar: " . count($posts) . "\n";
 
 // Contador opcional de accesos a la base de datos (sin implementar)
 $db_access_count = null; // Placeholder si deseas implementarlo en el futuro
@@ -109,11 +112,11 @@ foreach ($posts as $post) {
                 // Reemplazar todas las ocurrencias de la URL antigua por la nueva en el contenido
                 $content = str_replace($url, $new_url, $content);
                 $updated = true;
-                echo "Post ID {$post->ID}: Reemplazada URL {$url} por {$new_url}\n";
+                echo "Post/Página ID {$post->ID}: Reemplazada URL {$url} por {$new_url}\n";
             }
         }
 
-        // Si el contenido ha sido modificado, actualizar el post
+        // Si el contenido ha sido modificado, actualizar el post o página
         if ($updated && $content !== $original_content) {
             $resultado = $wpdb->update(
                 "{$table_prefix}posts",
@@ -124,9 +127,9 @@ foreach ($posts as $post) {
             );
 
             if ($resultado !== false) {
-                echo "Post ID {$post->ID} actualizado correctamente.\n";
+                echo "Post/Página ID {$post->ID} actualizado correctamente.\n";
             } else {
-                echo "Error al actualizar el Post ID {$post->ID}.\n";
+                echo "Error al actualizar el Post/Página ID {$post->ID}.\n";
             }
         }
     }
