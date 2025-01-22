@@ -1,5 +1,5 @@
 <?php
-// validar_imagenes.php
+// wp-image-checker.php
 
 // Asegúrate de que el script se ejecute desde la línea de comandos
 if (php_sapi_name() !== 'cli') {
@@ -9,31 +9,27 @@ if (php_sapi_name() !== 'cli') {
 // Incluye el archivo wp-load.php para acceder a las funciones de WordPress
 require_once(dirname(__FILE__) . '/wp-load.php');
 
-// Variables para almacenar el prefijo de la tabla y el contador de accesos a la base de datos
+// Variables para almacenar el prefijo de la tabla
 global $wpdb;
 $table_prefix = $wpdb->prefix;
-$db_access_count = 0;
-
-// Función para incrementar el contador cada vez que se accede a la base de datos
-function increment_db_access() {
-    global $db_access_count;
-    $db_access_count++;
-}
-
-// Hook para contar cada acceso a la base de datos
-$wpdb->add_filter('query', 'increment_db_access');
 
 // Extensiones de imágenes a buscar
 $image_extensions = ['jpg', 'jpeg', 'png', 'avif', 'webp'];
 
 // Obtener todos los posts publicados
-$posts = $wpdb->get_results($wpdb->prepare(
-    "SELECT ID, post_content FROM {$table_prefix}posts WHERE post_type = %s AND post_status = %s",
-    'post',
-    'publish'
-), OBJECT);
+$posts = $wpdb->get_results(
+    $wpdb->prepare(
+        "SELECT ID, post_content FROM {$table_prefix}posts WHERE post_type = %s AND post_status = %s",
+        'post',
+        'publish'
+    ),
+    OBJECT
+);
 
 echo "Total de posts a procesar: " . count($posts) . "\n";
+
+// Contador opcional de accesos a la base de datos (sin implementar)
+$db_access_count = null; // Placeholder si deseas implementarlo en el futuro
 
 foreach ($posts as $post) {
     $content = $post->post_content;
@@ -41,7 +37,7 @@ foreach ($posts as $post) {
     $updated = false;
 
     // Expresión regular para encontrar URLs de imágenes
-    // Considera URLs relativas y absolutas
+    // Considera URLs absolutas (HTTP/HTTPS)
     $pattern = '/https?:\/\/[^\s"\'<>]+\.(jpg|jpeg|png|avif|webp)/i';
 
     // Encuentra todas las coincidencias
@@ -119,8 +115,6 @@ foreach ($posts as $post) {
 
         // Si el contenido ha sido modificado, actualizar el post
         if ($updated && $content !== $original_content) {
-
-            /*
             $resultado = $wpdb->update(
                 "{$table_prefix}posts",
                 ['post_content' => $content],
@@ -128,8 +122,6 @@ foreach ($posts as $post) {
                 ['%s'],
                 ['%d']
             );
-            */
-            $resultado = true;
 
             if ($resultado !== false) {
                 echo "Post ID {$post->ID} actualizado correctamente.\n";
@@ -140,9 +132,10 @@ foreach ($posts as $post) {
     }
 }
 
-// Mostrar el prefijo de la tabla y el número de accesos a la base de datos
+// Mostrar el prefijo de la tabla
 echo "\nPrefijo de la tabla: {$table_prefix}\n";
-echo "Número total de accesos a la base de datos: {$db_access_count}\n";
+// Mostrar información adicional si se implementa el contador de accesos
+// echo "Número total de accesos a la base de datos: {$db_access_count}\n";
 
 echo "Proceso completado.\n";
 
