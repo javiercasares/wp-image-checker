@@ -20,10 +20,11 @@ $image_extensions = ['jpg', 'jpeg', 'png', 'avif', 'webp'];
 $posts = $wpdb->get_results(
     $wpdb->prepare(
         "SELECT ID, post_content FROM {$table_prefix}posts 
-         WHERE (post_type = %s OR post_type = %s) 
+         WHERE (post_type = %s OR post_type = %s OR post_type = %s) 
          AND post_status = %s",
         'post',
         'page',
+        'product',
         'publish'
     ),
     OBJECT
